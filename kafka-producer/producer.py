@@ -1,12 +1,40 @@
 import pandas as pd
 import json
 import time
+import os
 from confluent_kafka import Producer, KafkaError
 import logging
 from typing import Optional
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def find_csv_file(csv_filename: str = 'goodreads.csv') -> str:
+    """Find the CSV file in likely locations"""
+    # Possible paths to check
+    possible_paths = [
+        csv_filename,  # Direct relative path
+        f'../data/{csv_filename}',  # From kafka-producer to data dir
+        f'data/{csv_filename}',  # From project root
+        f'/Users/hazwanadh/Code/Sem4/bigdata/goodreads-book-recommend-bigdata/data/{csv_filename}',  # Absolute path
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            logger.info(f"📁 Found CSV file at: {path}")
+            return path
+    
+    # If none found, list current directory contents for debugging
+    logger.error(f"❌ Could not find {csv_filename}. Current directory: {os.getcwd()}")
+    logger.error(f"📁 Current directory contents: {os.listdir('.')}")
+    
+    # Try to find any .csv files
+    for root, dirs, files in os.walk('.'):
+        for file in files:
+            if file.endswith('.csv'):
+                logger.info(f"📄 Found CSV file: {os.path.join(root, file)}")
+    
+    raise FileNotFoundError(f"Could not find {csv_filename} in any expected location")
 
 class GoodreadsKafkaProducer:
     def __init__(self, bootstrap_servers: str = 'localhost:9092', topic: str = 'goodreads-books'):
@@ -142,8 +170,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Stream Goodreads data to Kafka')
-    parser.add_argument('--csv-file', default='../data/goodreads.csv', 
-                        help='Path to the CSV file')
+    parser.add_argument('--csv-file', default=None, 
+                        help='Path to the CSV file (auto-detected if not provided)')
     parser.add_argument('--kafka-servers', default='localhost:9092',
                         help='Kafka bootstrap servers')
     parser.add_argument('--topic', default='goodreads-books',
@@ -153,13 +181,22 @@ def main():
 
     args = parser.parse_args()
 
+    # Auto-detect CSV file if not provided
+    csv_file = args.csv_file
+    if csv_file is None:
+        try:
+            csv_file = find_csv_file()
+        except FileNotFoundError as e:
+            logger.error(f"💥 {e}")
+            return
+
     producer = GoodreadsKafkaProducer(
         bootstrap_servers=args.kafka_servers,
         topic=args.topic
     )
 
     try:
-        producer.send_book_data(args.csv_file, args.delay)
+        producer.send_book_data(csv_file, args.delay)
     except KeyboardInterrupt:
         logger.info("Producer stopped by user")
     except Exception as e:
