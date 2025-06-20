@@ -58,60 +58,12 @@ services:
       sleep 5;
       mc alias set myminio http://minio:9000 minioadmin minioadmin &&
       mc mb myminio/streaming-data || echo 'Bucket already exists';
+      mc mb myminio/models || echo 'Models bucket already exists';
       exit 0;"
     networks:
       - goodreads-network
 
-  # PostgreSQL for Hive Metastore
-  postgres:
-    image: postgres:13
-    hostname: postgres
-    container_name: postgres
-    environment:
-      POSTGRES_DB: metastore
-      POSTGRES_USER: hive
-      POSTGRES_PASSWORD: hive
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - goodreads-network
-
-  # Hive Metastore
-  hive-metastore:
-    image: bitsondatadev/hive-metastore:latest
-    hostname: hive-metastore
-    container_name: hive-metastore
-    platform: linux/amd64 # Force AMD64 for Apple Silicon compatibility
-    environment:
-      METASTORE_DB_HOSTNAME: postgres
-      METASTORE_TYPE: postgres
-      METASTORE_PORT: 5432
-      METASTORE_DATABASE: metastore
-      METASTORE_USERNAME: hive
-      METASTORE_PASSWORD: hive
-    depends_on:
-      - postgres
-    ports:
-      - "9083:9083"
-    networks:
-      - goodreads-network
-
-  # Trino
-  trino:
-    image: trinodb/trino:latest
-    hostname: trino
-    container_name: trino
-    ports:
-      - "8081:8080"
-    volumes:
-      - ./trino-config:/etc/trino
-    depends_on:
-      - hive-metastore
-      - minio
-    networks:
-      - goodreads-network
-
-  # Apache Spark
+  # Apache Spark Master
   spark-master:
     image: bitnami/spark:latest
     platform: linux/amd64 # Force AMD64 for Apple Silicon compatibility
@@ -123,15 +75,21 @@ services:
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
+      # S3 Configuration for MinIO
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
     ports:
-      - "8082:8082"
-      - "7077:7077"
+      - "8082:8082" # Spark Master Web UI
+      - "7077:7077" # Spark Master Port
     volumes:
       - ./spark-apps:/opt/spark-apps
       - ./data:/opt/spark-data
+    depends_on:
+      - minio
     networks:
       - goodreads-network
 
+  # Apache Spark Worker
   spark-worker:
     image: bitnami/spark:latest
     platform: linux/amd64 # Force AMD64 for Apple Silicon compatibility
@@ -146,6 +104,9 @@ services:
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
+      # S3 Configuration for MinIO
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
     depends_on:
       - spark-master
     volumes:
@@ -174,8 +135,6 @@ services:
 
 volumes:
   minio-data:
-    driver: local
-  postgres-data:
     driver: local
 
 networks:

@@ -3,3 +3,6 @@
 
 # Datasets
 *.csv
+
+# Model artifacts
+api-backend/models/*
