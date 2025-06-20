@@ -59,10 +59,9 @@ Dalam era digital saat ini, platform buku online seperti Goodreads menghadapi ta
 ---
 
 ## 🏗️ Architecture Overview
-
-```
 ![image](./img/flow.png)
-```
+
+---
 
 ### *Komponen Utama*
 
