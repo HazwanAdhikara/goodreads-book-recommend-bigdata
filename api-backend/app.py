@@ -347,35 +347,5 @@ def get_filtered_recommendations():
         'total': len(books)
     })
 
-try:
-    from trino.dbapi import connect
-except ImportError:
-    connect = None
-
-@app.route('/books/query', methods=['POST'])
-def query_books():
-    """
-    Run custom SQL query on the data lakehouse via Trino.
-    Expects JSON: { "sql": "SELECT * FROM books LIMIT 10" }
-    """
-    if connect is None:
-        return jsonify({'error': 'Trino client not installed'}), 500
-    data = request.get_json()
-    if not data or 'sql' not in data:
-        return jsonify({'error': 'SQL query required'}), 400
-    sql = data['sql']
-    try:
-        conn = connect(
-            host='trino', port=8080, user='user',
-            catalog='hive', schema='default'
-        )
-        cur = conn.cursor()
-        cur.execute(sql)
-        columns = [desc[0] for desc in cur.description]
-        rows = cur.fetchall()
-        return jsonify({'columns': columns, 'rows': rows})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
