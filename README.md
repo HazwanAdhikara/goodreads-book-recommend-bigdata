@@ -93,23 +93,15 @@ cd goodreads-book-recommend-bigdata
 ### *2. Setup Environment*
 
 bash
-# Pastikan Docker berjalan
 docker --version
 docker-compose --version
-
-# Download dataset (jika belum ada)
-# Letakkan file goodreads.csv di folder data/
-
 
 ### *3. Jalankan Infrastructure*
 
 bash
-# Start semua services
 docker-compose up -d
 
-# Verifikasi services berjalan
 docker ps
-
 
 *Services yang berjalan*:
 
@@ -121,7 +113,6 @@ docker ps
 ### *4. Streaming Data dengan Kafka*
 
 bash
-# Terminal 1: Jalankan Kafka Producer
 cd kafka-producer
 python3 -m venv venv
 source venv/bin/activate
@@ -132,23 +123,16 @@ python producer.py
 ### *5. Monitoring dengan Streamlit*
 
 bash
-# Akses dashboard: http://localhost:8501
-# Pilih "Full Dataset Processing" untuk stream 183K records
-# Data akan otomatis disimpan ke MinIO setiap 5K records
+Akses dashboard: http://localhost:8501 dan pilih "Full Dataset Processing" untuk stream 183K records. Data akan otomatis disimpan ke MinIO setiap 5K records
 
 
 ### *6. Machine Learning Pipeline*
 
 bash
-# Akses Spark container
 docker exec -it spark-master bash
 
-# Jalankan Jupyter notebook atau Python script
 cd /opt/spark-apps
 python -m jupyter notebook --allow-root --ip=0.0.0.0 --port=8888
-
-# Atau jalankan notebook model.ipynb di VS Code
-
 
 ### *7. Deploy Model dengan Flask API*
 
@@ -166,7 +150,8 @@ bash
 cd react-frontend
 npm install
 npm start
-# Akses: http://localhost:3000
+
+Akses: http://localhost:3000
 
 ---
 
@@ -212,7 +197,6 @@ streaming-data/
 *Data Preprocessing*:
 
 python
-# Text processing
 tokenizer = RegexTokenizer(inputCol="Description", outputCol="words")
 remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
 cv = CountVectorizer(inputCol="tags", outputCol="features", vocabSize=10000)
@@ -261,7 +245,6 @@ cv = CountVectorizer(inputCol="tags", outputCol="features", vocabSize=10000)
 ### *Docker Compose Configuration*
 
 yaml
-# Services utama
 services:
   kafka: # Message broker
   zookeeper: # Kafka coordination
@@ -274,15 +257,12 @@ services:
 ### *Environment Variables*
 
 bash
-# MinIO
 MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadmin
 
-# Kafka
 KAFKA_BOOTSTRAP_SERVERS=kafka:29092
 KAFKA_TOPIC=goodreads-books
 
-# Spark
 SPARK_MASTER_URL=spark://spark-master:7077
 
 
@@ -337,13 +317,10 @@ SPARK_MASTER_URL=spark://spark-master:7077
 ### *Unit Tests*
 
 bash
-# Test Kafka connectivity
 python test_kafka.py
 
-# Test model loading
 python test_models.py
 
-# Test API endpoints
 python test_api.py
 
 
