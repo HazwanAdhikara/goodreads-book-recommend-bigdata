@@ -6,3 +6,4 @@
 
 # Model artifacts
 api-backend/models/*
+api-backend/venv

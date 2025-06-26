@@ -21,6 +21,6 @@ COPY . .
 # Create directories for data and models
 RUN mkdir -p /app/data /app/models /app/spark-apps
 
-EXPOSE 5000
+EXPOSE 5001
 
 CMD ["python", "app.py"]
