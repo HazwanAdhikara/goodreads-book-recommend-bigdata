@@ -1,236 +1,399 @@
 # 📚 Sistem Rekomendasi Buku Goodreads - Data Lakehouse Implementation
 
-![Goodreads Big Data](https://img.shields.io/badge/Big%20Data-Goodreads-blue) ![Kafka](https://img.shields.io/badge/Apache%20Kafka-Streaming-orange) ![Spark](https://img.shields.io/badge/Apache%20Spark-ML-red) ![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
+![Goodreads Big Data](https://img.shields.io/badge/Big%20Data-Goodreads-blue) ![Kafka](https://img.shields.io/badge/Apache%20Kafka-Streaming-orange) ![Spark](https://img.shields.io/badge/Apache%20Spark-ML-red) ![Docker](https://img.shields.io/badge/Docker-Containerized-blue) ![React](https://img.shields.io/badge/React-Frontend-61DAFB) ![Flask](https://img.shields.io/badge/Flask-API-lightgrey)
 
-A comprehensive book recommendation system built with modern data lakehouse architecture, featuring real-time streaming, machine learning, and a beautiful React frontend.
+Sebuah sistem rekomendasi buku yang komprehensif dengan arsitektur data lakehouse modern, menampilkan real-time streaming, machine learning.
 
 **Final Project - Big Data**  
-**Kelompok 2**
-**Kelas Big Data A**
+**Kelompok 2**  
+**Kelas Big Data A**  
 **Tahun Akademik 2025**
 
-| Nama                | NRP        |
-| ------------------- | ---------- |
-| Hazwan Adhikara     | 5027231017 |
-| Rafael Gunawan      | 5027231019 |
-| Nicholas Arya     | 5027231058 |
-| Randist Prawandha Putera          | 5027231059 |
-| Diandra Naufal A        | 5027231004 |
+| Nama                     | NRP        |
+| ------------------------ | ---------- |
+| Diandra Naufal A         | 5027231004 |
+| Hazwan Adhikara          | 5027231017 |
+| Rafael Gunawan           | 5027231019 |
+| Nicholas Arya            | 5027231058 |
+| Randist Prawandha Putera | 5027231059 |
 
 ---
 
-### *Identifikasi Masalah Nyata*
+## 📖 Daftar Isi
 
-*Industri*: Platform E-commerce dan Layanan Digital (Goodreads/Amazon)
+1. [Identifikasi Masalah](#-identifikasi-masalah-nyata)
+2. [Arsitektur Sistem](#️-architecture-overview)
+3. [Struktur Proyek](#-struktur-proyek)
+4. [Quick Start](#-quick-start)
+5. [Detail Implementasi](#-detail-implementasi)
+6. [Testing & Validasi](#-testing-dan-validasi)
+7. [Dokumentasi API](#-dokumentasi-api)
+8. [Deployment](#-deployment)
+9. [Monitoring & Analytics](#-monitoring--analytics)
+10. [Troubleshooting](#-troubleshooting)
 
-*Tantangan Bisnis*:
+---
+
+## 🎯 Identifikasi Masalah Nyata
+
+### _Industri_: Platform E-commerce dan Layanan Digital (Goodreads)
+
+### _Tantangan Bisnis_:
+
 Dalam era digital saat ini, platform buku online seperti Goodreads menghadapi tantangan besar dalam memberikan rekomendasi buku yang personal dan akurat kepada jutaan pengguna. Masalah utama yang dihadapi:
 
-1. *Volume Data Besar*: Goodreads memiliki 183,000+ data buku dengan atribut kompleks
-2. *Real-time Processing*: Kebutuhan untuk memproses aktivitas pengguna secara real-time
-3. *Personalisasi*: Memberikan rekomendasi yang akurat berdasarkan preferensi pengguna
-4. *Skalabilitas*: Sistem harus mampu menangani pertumbuhan data yang eksponensial
+1. **📊 Volume Data Besar**: Goodreads memiliki 183,000+ data buku dengan atribut kompleks
+2. **⚡ Real-time Processing**: Kebutuhan untuk memproses aktivitas pengguna secara real-time
+3. **🎯 Personalisasi**: Memberikan rekomendasi yang akurat berdasarkan preferensi pengguna
+4. **📈 Skalabilitas**: Sistem harus mampu menangani pertumbuhan data yang eksponensial
+5. **🔍 Discovery**: Membantu pengguna menemukan buku baru sesuai minat mereka
 
-### *Definisi Masalah*
+### _Definisi Masalah_
 
-*Jenis dan Volume Data*:
+**Jenis dan Volume Data**:
 
-- *183,000+ buku* dengan 13 atribut (ID, Name, Authors, Rating, Description, dll.)
-- *Stream data real-time* untuk aktivitas pengguna
-- *Unstructured text data* (deskripsi buku, review)
-- *Structured numerical data* (rating, tahun publikasi, jumlah halaman)
+- **183,000+ buku** dengan 13 atribut (ID, Name, Authors, Rating, Description, dll.)
+- **Stream data real-time** untuk aktivitas pengguna
+- **Unstructured text data** (deskripsi buku, review)
+- **Structured numerical data** (rating, tahun publikasi, jumlah halaman)
 
-*Teknologi dan Sistem*:
+**Teknologi dan Sistem**:
 
-- *Apache Kafka* untuk real-time data streaming
-- *Apache Spark* untuk big data processing dan machine learning
-- *MinIO* sebagai object storage (S3-compatible)
-- *Docker* untuk containerization dan orchestration
-- *Streamlit* untuk visualisasi dan monitoring
-- *Flask API* untuk deployment model
+- **Apache Kafka** untuk real-time data streaming
+- **Apache Spark** untuk big data processing dan machine learning
+- **MinIO** sebagai object storage (S3-compatible)
+- **Docker** untuk containerization dan orchestration
+- **React + TypeScript** untuk modern frontend
+- **Flask API** untuk deployment model
 
-*Tantangan Teknis*:
+**Tantangan Teknis**:
 
-1. *Data Ingestion*: Streaming 183K records secara efisien
-2. *Data Storage*: Penyimpanan batch data yang scalable
-3. *ML Pipeline*: Training model recommendation yang akurat
-4. *Real-time Inference*: Deployment model untuk real-time prediction
+1. **Data Ingestion**: Streaming 183K records secara efisien
+2. **Data Storage**: Penyimpanan batch data yang scalable
+3. **ML Pipeline**: Training model recommendation yang akurat
+4. **Real-time Inference**: Deployment model untuk real-time prediction
+5. **User Experience**: Interface yang responsive dan intuitif
 
 ---
 
 ## 🏗️ Architecture Overview
+
 ![image](./img/flow.png)
+
+### **Data Flow Architecture**
+
+```mermaid
+graph TB
+    A[Dataset Goodreads] --> B[Kafka Producer]
+    B --> C[Apache Kafka]
+    C --> D[Streamlit Dashboard]
+    C --> E[MinIO Storage]
+    E --> F[Apache Spark]
+    F --> G[ML Models]
+    G --> H[Flask API]
+    H --> I[React Frontend]
+
+    subgraph "Machine Learning"
+        G1[Content-based LSH]
+        G2[Collaborative ALS]
+        G3[Hybrid Filtering]
+    end
+
+    G --> G1
+    G --> G2
+    G --> G3
+```
 
 ---
 
-### *Komponen Utama*
+### **Komponen Utama**
 
-1. *📊 Data Source*: Dataset Goodreads dengan 183K buku
-2. *🌊 Kafka Producer*: Streaming data secara real-time
-3. *📡 Apache Kafka*: Message broker untuk data streaming
-4. *📱 Streamlit Dashboard*: Visualisasi dan monitoring real-time
-5. *🗄 MinIO*: Object storage untuk batch files (S3-compatible)
-6. *⚡ Apache Spark*: Big data processing dan machine learning
-7. *🤖 ML Models*: Collaborative Filtering (ALS) + Content-based (LSH)
-8. *🌐 Flask API*: Deployment model untuk serving
-9. *💻 Frontend*: User interface untuk rekomendasi buku
+| Komponen                   | Deskripsi                                           | Port/URL | Status |
+| -------------------------- | --------------------------------------------------- | -------- | ------ |
+| 📊 **Data Source**         | Dataset Goodreads dengan 183K buku                  | -        | ✅     |
+| 🌊 **Kafka Producer**      | Streaming data secara real-time                     | 9092     | ✅     |
+| 📡 **Apache Kafka**        | Message broker untuk data streaming                 | 9092     | ✅     |
+| 📱 **Streamlit Dashboard** | Visualisasi dan monitoring real-time                | 8501     | ✅     |
+| 🗄 **MinIO**                | Object storage untuk batch files (S3-compatible)    | 9001     | ✅     |
+| ⚡ **Apache Spark**        | Big data processing dan machine learning            | 8082     | ✅     |
+| 🤖 **ML Models**           | Collaborative Filtering (ALS) + Content-based (LSH) | -        | ✅     |
+| 🌐 **Flask API**           | Backend API untuk serving model                     | 5001     | ✅     |
+| 💻 **React Frontend**      | Modern UI untuk rekomendasi buku                    | 3000     | ✅     |
+
+---
+
+## 📁 Struktur Proyek
+
+```
+goodreads-book-recommend-bigdata/
+├── 📄 README.md                    # Dokumentasi utama proyek
+├── 📄 docker-compose.yml           # Konfigurasi semua services
+├── 📄 .gitignore                   # File yang diabaikan git
+├── 📄 cleaningdataset.ipynb        # Notebook untuk cleaning data
+├── 📄 test_consumer.py             # Testing Kafka consumer
+│
+├── 📁 api-backend/                 # Backend Flask API
+│   ├── 📄 app.py                   # Main Flask application
+│   ├── 📄 Dockerfile               # Container untuk backend
+│   ├── 📄 requirements.txt         # Dependencies Python
+│   └── 📁 models/                  # Model ML dan data
+│       ├── 📄 model_loader.py      # Loader untuk model ML
+│       ├── 📄 model_metadata.pkl   # Metadata model
+│       ├── 📄 vocabulary.pkl       # Vocabulary untuk NLP
+│       ├── 📄 books_pandas.parquet # Data buku dalam format Parquet
+│       ├── 📁 als_model/           # Model Collaborative Filtering
+│       ├── 📁 books_features.parquet/ # Features untuk Content-based
+│       ├── 📁 cv_model/            # Count Vectorizer model
+│       └── 📁 lsh_model/           # LSH model untuk similarity
+│
+├── 📁 data/                        # Dataset mentah
+│   ├── 📄 goodreads.csv            # Dataset utama Goodreads
+│   └── 📄 raw.csv                  # Data mentah backup
+│
+├── 📁 demo-steps/                  # Script untuk demo dan testing
+│   ├── 📄 0-complete-demo.sh       # Demo lengkap otomatis
+│   ├── 📄 1-startdocker.sh         # Start semua Docker services
+│   ├── 📄 2-producer.sh            # Jalankan Kafka producer
+│   ├── 📄 3-backend.sh             # Start Flask API backend
+│   ├── 📄 4-frontend.sh            # Start React frontend
+│   └── 📄 5-complete-demo.sh       # Demo komprehensif terbaru
+│
+├── 📁 kafka-producer/              # Kafka producer untuk streaming
+│   ├── 📄 producer.py              # Script producer utama
+│   └── 📄 requirements.txt         # Dependencies untuk producer
+│
+├── 📁 react-frontend/              # Frontend React Modern
+│   ├── 📄 package.json             # Dependencies Node.js
+│   ├── 📄 Dockerfile               # Container untuk frontend
+│   ├── 📄 nginx.conf               # Konfigurasi Nginx
+│   ├── 📄 tailwind.config.js       # Konfigurasi Tailwind CSS
+│   ├── 📄 tsconfig.json            # Konfigurasi TypeScript
+│   ├── 📁 public/                  # Static files
+│   │   └── 📄 index.html           # Template HTML utama
+│   └── 📁 src/                     # Source code React
+│       ├── 📄 App.tsx              # Komponen utama aplikasi
+│       ├── 📄 index.tsx            # Entry point React
+│       ├── 📄 index.css            # Global styles dengan Tailwind
+│       ├── 📁 components/          # Komponen React reusable
+│       │   ├── 📄 BookCard.tsx     # Kartu buku dengan cover dinamis
+│       │   ├── 📄 Header.tsx       # Header navigasi
+│       │   ├── 📄 SearchBar.tsx    # Bar pencarian
+│       │   ├── 📄 LoadingSpinner.tsx # Komponen loading
+│       ├── 📁 pages/               # Halaman utama aplikasi
+│       │   ├── 📄 HomePage.tsx     # Halaman beranda
+│       │   ├── 📄 BookDetailsPage.tsx # Detail buku
+│       │   ├── 📄 PopularBooksPage.tsx # Halaman buku populer
+│       │   ├── 📄 SearchPage.tsx   # Halaman pencarian
+│       │   ├── 📄 BookDetailsPage.tsx # Detail buku + rekomendasi
+│       │   └── 📄 RecommendationsPage.tsx # Halaman rekomendasi
+│       ├── 📁 services/            # Service untuk API calls
+│       │   └── 📄 goodreads-api.ts # Client API untuk backend
+│       ├── 📁 types/               # TypeScript type definitions
+│       │   └── 📄 api.ts           # Types untuk API responses
+│       └── 📁 utils/               # Utility functions
+│           └── 📄 index.ts         # Helper functions
+│
+├── 📁 spark-apps/                 # Aplikasi Spark untuk ML
+│   ├── 📄 model.ipynb             # Jupyter notebook untuk training
+│   └── 📄 recommendation_model.py # Model rekomendasi Python
+│
+├── 📁 streamlit-app/              # Dashboard monitoring Streamlit
+│   ├── 📄 app.py                  # Aplikasi Streamlit utama
+│   ├── 📄 Dockerfile              # Container untuk Streamlit
+│   ├── 📄 requirements.txt        # Dependencies Streamlit
+│   └── 📁 data/                   # Data batch dari streaming
+│       ├── 📄 books_batch_001_*.csv # Batch 1 (5K records)
+│       ├── 📄 books_batch_002_*.csv # Batch 2 (5K records)
+│       └── ...                    # Batch files lainnya
+│
+└── 📁 img/                        # Assets dan dokumentasi
+```
+
+### **Penjelasan Detail Komponen**
+
+#### **🔧 Backend & API** (`api-backend/`)
+
+- **app.py**: Flask API dengan endpoint untuk pencarian, rekomendasi, dan detail buku
+- **models/**: Menyimpan model ML yang sudah dilatih dan data dalam format optimal
+- **model_loader.py**: Modul untuk memuat dan mengelola model ML
+
+#### **⚛️ Frontend** (`react-frontend/`)
+
+- **Modern React + TypeScript**: Aplikasi web responsive dengan UI/UX modern
+- **Tailwind CSS**: Framework CSS untuk styling yang konsisten dan indah
+- **Component-based**: Arsitektur komponen yang reusable dan maintainable
+- **Type Safety**: Full TypeScript untuk error prevention
+
+#### **🔄 Data Processing** (`spark-apps/`)
+
+- **model.ipynb**: Notebook Jupyter untuk eksperimen dan training model
+- **recommendation_model.py**: Implementasi model LSH dan ALS
+
+#### **📊 Monitoring** (`streamlit-app/`)
+
+- **Real-time Dashboard**: Monitoring streaming data dan batch processing
+- **Data Visualization**: Grafik dan metrics untuk analisis performa
+
+#### **🚀 DevOps** (`demo-steps/`)
+
+- **Automated Scripts**: Script untuk deployment dan testing otomatis
+- **Docker Integration**: Containerization untuk semua komponen
+
+---
 
 ## 🚀 Quick Start
 
-### *Prerequisites*
+### **Prerequisites**
 
-- Docker & Docker Compose
-- Python 3.8+
-- Minimum 8GB RAM
+| Requirement        | Version | Cara Install                                      |
+| ------------------ | ------- | ------------------------------------------------- |
+| **Docker**         | 20.0+   | [Download Docker](https://docker.com/get-started) |
+| **Docker Compose** | 2.0+    | Included dengan Docker Desktop                    |
+| **Python**         | 3.8+    | [Download Python](https://python.org/downloads)   |
+| **Node.js**        | 16.0+   | [Download Node.js](https://nodejs.org)            |
+| **Git**            | 2.0+    | [Download Git](https://git-scm.com)               |
+| **RAM**            | 8GB+    | -                                                 |
+| **Storage**        | 10GB+   | -                                                 |
 
-### *1. Clone Repository*
+### **🎬 Demo Otomatis (Recommended)**
 
-bash
-git clone <repository-url>
-cd goodreads-book-recommend-bigdata
+**Quick Setup:**
 
+1. Clone repository
+2. Navigate ke project directory
+3. Jalankan script demo lengkap: `./demo-steps/5-complete-demo.sh`
 
-### *2. Setup Environment*
+Demo otomatis akan:
 
-bash
-docker --version
-docker-compose --version
+1. ✅ Memverifikasi sistem requirements
+2. ✅ Menjalankan backend Flask API
+3. ✅ Menjalankan frontend React
+4. ✅ Membuka aplikasi di browser
+5. ✅ Memberikan instruksi testing
 
-### *3. Jalankan Infrastructure*
+### **📋 Setup Manual Step-by-Step**
 
-bash
-docker-compose up -d
+#### **1. Clone Repository**
 
-docker ps
+- Clone repository dari GitHub
+- Navigate ke project directory
 
-*Services yang berjalan*:
+#### **2. Setup Infrastructure dengan Docker**
 
-- Kafka: localhost:9092
-- MinIO Console: localhost:9001 (admin/admin)
-- Spark Master UI: localhost:8082
-- Streamlit Dashboard: localhost:8501
+- Verifikasi Docker dan Docker Compose installed
+- Start semua services: `./demo-steps/1-startdocker.sh`
+- Verify services running: `docker ps`
 
-### *4. Streaming Data dengan Kafka*
+**Services yang tersedia**:
 
-bash
-cd kafka-producer
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python producer.py
+- **Kafka**: `localhost:9092`
+- **MinIO Console**: `localhost:9001` (admin/admin)
+- **Spark Master UI**: `localhost:8082`
+- **Streamlit Dashboard**: `localhost:8501`
 
+#### **3. Streaming Data dengan Kafka**
 
-### *5. Monitoring dengan Streamlit*
+- Jalankan Kafka Producer: `./demo-steps/2-producer.sh`
+- Monitor data streaming progress di terminal
 
-bash
-Akses dashboard: http://localhost:8501 dan pilih "Full Dataset Processing" untuk stream 183K records. Data akan otomatis disimpan ke MinIO setiap 5K records
+#### **4. Machine Learning Pipeline**
 
+- Access Jupyter Notebook: `docker exec -it spark-master bash`
+- Navigate ke `/opt/spark-apps` dan run notebook
+- Access via: http://localhost:8888
+- Execute model.ipynb untuk training models
 
-### *6. Machine Learning Pipeline*
+#### **5. Deploy Backend API**
 
-bash
-docker exec -it spark-master bash
+- Start Flask API: `./demo-steps/3-backend.sh`
+- Verify API health: `curl http://localhost:5001/health`
 
-cd /opt/spark-apps
-python -m jupyter notebook --allow-root --ip=0.0.0.0 --port=8888
+#### **6. Start Frontend**
 
-### *7. Deploy Model dengan Flask API*
+- Start React application: `./demo-steps/4-frontend.sh`
+- Access aplikasi: http://localhost:3000
 
-bash
-cd api-backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python app.py
+### **🎯 Akses Aplikasi**
 
-
-### *8. Akses Frontend*
-
-bash
-cd react-frontend
-npm install
-npm start
-
-Akses: http://localhost:3000
+| Service                 | URL                   | Deskripsi                     |
+| ----------------------- | --------------------- | ----------------------------- |
+| **Frontend Utama**      | http://localhost:3000 | Aplikasi web rekomendasi buku |
+| **Backend API**         | http://localhost:5001 | REST API untuk ML models      |
+| **Streamlit Dashboard** | http://localhost:8501 | Monitoring dan analytics      |
+| **MinIO Storage**       | http://localhost:9001 | Object storage management     |
+| **Spark UI**            | http://localhost:8082 | Spark cluster monitoring      |
+| **Jupyter Notebook**    | http://localhost:8888 | ML development environment    |
 
 ---
 
-## 📊 *Detail Implementasi*
+## 📊 _Detail Implementasi_
 
-### *1. Data Ingestion Layer (Kafka)*
+### _1. Data Ingestion Layer (Kafka)_
 
-*Kafka Producer* (kafka-producer/producer.py):
+_Kafka Producer_ (kafka-producer/producer.py):
 
 - Membaca dataset Goodreads (183K records)
 - Streaming data real-time ke topic goodreads-books
 - Robust error handling dan progress tracking
 
-*Konfigurasi*:
+_Konfigurasi Kafka Producer_:
 
-python
-KAFKA_BOOTSTRAP = 'localhost:9092'
-TOPIC = 'goodreads-books'
-BATCH_SIZE = 1000  # Records per batch
+- Bootstrap server: localhost:9092
+- Topic: goodreads-books
+- Batch size: 1000 records per batch
+- Error handling dan progress tracking
 
+### _2. Data Lake Layer (MinIO)_
 
-### *2. Data Lake Layer (MinIO)*
-
-*MinIO Object Storage*:
+_MinIO Object Storage_:
 
 - S3-compatible storage untuk batch files
 - Auto-save setiap 5K records dari Streamlit
 - Bucket: streaming-data
 
-*File Structure*:
-
+_File Structure_:
 
 streaming-data/
 ├── books_batch_001_20250620_032958.csv
 ├── books_batch_002_20250620_032958.csv
 └── ...
 
+### _3. Processing Layer (Spark)_
 
-### *3. Processing Layer (Spark)*
+_Spark ML Pipeline_ (spark-apps/model.ipynb):
 
-*Spark ML Pipeline* (spark-apps/model.ipynb):
+_Data Preprocessing Pipeline_:
 
-*Data Preprocessing*:
+- RegexTokenizer untuk tokenisasi text
+- StopWordsRemover untuk cleaning
+- CountVectorizer dengan vocabulary 10,000 kata
+- Feature engineering untuk content-based filtering
 
-python
-tokenizer = RegexTokenizer(inputCol="Description", outputCol="words")
-remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
-cv = CountVectorizer(inputCol="tags", outputCol="features", vocabSize=10000)
+_Machine Learning Models_:
 
+1. _Content-based Filtering (LSH)_:
 
-*Machine Learning Models*:
+   - BucketedRandomProjectionLSH untuk similarity search
+   - 6 hash tables dengan bucket length 2.0
+   - Feature-based recommendation engine
 
-1. *Content-based Filtering (LSH)*:
+2. _Collaborative Filtering (ALS)_:
+   - Matrix factorization dengan rank 50
+   - 10 iterations dengan regularization 0.1
+   - User-item rating prediction
 
-   python
-   lsh = BucketedRandomProjectionLSH(
-       inputCol="features", outputCol="hashes",
-       bucketLength=2.0, numHashTables=6
-   )
-   
+### _4. Model Deployment (Flask API)_
 
-2. *Collaborative Filtering (ALS)*:
-   python
-   als = ALS(userCol="userId", itemCol="bookId", ratingCol="rating",
-             rank=50, maxIter=10, regParam=0.1)
-   
-
-### *4. Model Deployment (Flask API)*
-
-*Endpoints*:
+_Endpoints_:
 
 - GET /popular: Top-rated books
 - GET /search?q=query: Search books
 - POST /favorite: Content-based recommendations
 - GET /user/{user_id}/recommendations: Collaborative filtering
 
-### *5. Visualization Layer (Streamlit)*
+### _5. Visualization Layer (Streamlit)_
 
-*Features*:
+_Features_:
 
 - Real-time data monitoring
 - Interactive filtering (rating, year)
@@ -240,99 +403,253 @@ cv = CountVectorizer(inputCol="tags", outputCol="features", vocabSize=10000)
 
 ---
 
-## 🔧 *Konfigurasi dan Settings*
+## 🔧 _Konfigurasi dan Settings_
 
-### *Docker Compose Configuration*
+### _Docker Compose Services_:
 
-yaml
-services:
-  kafka: # Message broker
-  zookeeper: # Kafka coordination
-  minio: # Object storage
-  spark-master: # Spark cluster master
-  spark-worker: # Spark worker nodes
-  streamlit: # Dashboard & monitoring
-
-
-### *Environment Variables*
-
-bash
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin
-
-KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-KAFKA_TOPIC=goodreads-books
-
-SPARK_MASTER_URL=spark://spark-master:7077
-
-
-### *Resource Requirements*
-
-| Component    | CPU     | Memory | Storage |
-| ------------ | ------- | ------ | ------- |
-| Kafka        | 1 core  | 1GB    | 10GB    |
-| Spark Master | 2 cores | 2GB    | 5GB     |
-| Spark Worker | 2 cores | 2GB    | 20GB    |
-| MinIO        | 1 core  | 512MB  | 50GB    |
-| Streamlit    | 1 core  | 1GB    | 1GB     |
+- Kafka: Message broker untuk streaming
+- Zookeeper: Kafka coordination service
+- MinIO: S3-compatible object storage
+- Spark Master: Spark cluster coordinator
+- Spark Worker: Distributed processing nodes
+- Streamlit: Dashboard dan monitoring
 
 ---
 
-## 📈 *Hasil dan Metrics*
+## 📈 _Hasil dan Metrics_
 
-### *Data Processing Performance*
+### _Data Processing Performance_
 
-- *Dataset Size*: 183,000 buku
-- *Streaming Rate*: ~1,000 records/second
-- *Batch Processing*: 5,000 records/batch
-- *Total Processing Time*: ~3-5 menit untuk full dataset
+- _Dataset Size_: 183,000 buku
+- _Streaming Rate_: ~1,000 records/second
+- _Batch Processing_: 5,000 records/batch
+- _Total Processing Time_: ~3-5 menit untuk full dataset
 
-### *Model Performance*
+### _Model Performance_
 
-*Content-based Filtering (LSH)*:
+_Content-based Filtering (LSH)_:
 
-- *Feature Dimension*: 10,000 vocabulary
-- *Hash Tables*: 6
-- *Bucket Length*: 2.0
-- *Similarity Accuracy*: ~85%
+- _Feature Dimension_: 10,000 vocabulary
+- _Hash Tables_: 6
+- _Bucket Length_: 2.0
+- _Similarity Accuracy_: ~85%
 
-*Collaborative Filtering (ALS)*:
+_Collaborative Filtering (ALS)_:
 
-- *Model Rank*: 50
-- *Iterations*: 10
-- *Regularization*: 0.1
-- *RMSE*: ~0.8
-
-### *Storage Metrics*
-
-- *Raw Data*: ~180MB (CSV files)
-- *Processed Data*: ~500MB (Parquet)
-- *Model Files*: ~200MB
-- *Total Storage*: ~1GB
+- _Model Rank_: 50
+- _Iterations_: 10
+- _Regularization_: 0.1
+- _RMSE_: ~0.8
 
 ---
 
-## 🧪 *Testing dan Validasi*
+## 🧪 Testing dan Validasi
 
-### *Unit Tests*
+### **📋 Checklist Testing Komprehensif**
 
-bash
-python test_kafka.py
+#### **1. Infrastructure Testing**
 
-python test_models.py
+**✅ Verifikasi Docker Services**
 
-python test_api.py
+- Cek status semua container dengan `docker ps`
+- Verifikasi port mapping dan network connectivity
+- Pastikan 6/6 services berjalan dengan status UP
 
+**✅ Health Check Services**
 
-### *Dokumentasi*
+- Kafka topic listing untuk verifikasi broker
+- MinIO health endpoint check
+- Spark UI accessibility test
 
-1. *Producer Run*:
-![image](./img/producer.png)
-2. *Visualisasi Streamlit*:
-![image](./img/streamlit.jpg)
-3. *Data Stream to Minio*:
-![image](./img/minio.jpg)
-4. *Batchdata in Minio*:
-![image](./img/batchdata.jpg)
+#### **2. Data Pipeline Testing**
+
+**✅ Kafka Producer Testing**
+
+- Test producer dengan mode test dan batch kecil
+- Verifikasi message consumption di consumer
+- Monitor producer metrics dan error rates
+
+**✅ Streamlit Dashboard Testing**
+
+- Akses dashboard di http://localhost:8501
+- Verifikasi data streaming real-time
+- Test batch file creation dan MinIO integration
+
+**✅ MinIO Storage Testing**
+
+- Install dan configure MinIO client (mc)
+- Setup alias untuk local MinIO instance
+- List buckets dan verify file storage
+
+#### **3. Machine Learning Pipeline Testing**
+
+**✅ Spark ML Model Testing**
+
+- Access Jupyter notebook via docker exec
+- Execute model training notebook
+- Verify model files creation in api-backend/models/
+
+**✅ Model Validation**
+
+- Load test data subset (1000 records)
+- Test model prediction pipeline
+- Validate output format dan accuracy
+
+#### **4. Backend API Testing**
+
+**✅ API Health Check**
+
+- Basic health endpoint test
+- Test semua API endpoints dengan sample requests
+- Verify response format dan status codes
+
+**✅ Comprehensive API Testing**
+
+- Test popular books endpoint dengan JSON parsing
+- Test search functionality dengan query parameters
+- Test book details retrieval
+- Test recommendation endpoints (content-based dan collaborative)
+
+#### **5. Frontend Testing**
+
+**✅ React Application Testing**
+
+- Test build process dan verify bundle size
+- Test development server startup
+- Check homepage accessibility
+
+**✅ UI Component Testing**
+
+- Test homepage loading dan content verification
+- Test API integration between frontend dan backend
+- Verify critical user flows functional
+
+#### **6. End-to-End Testing**
+
+**✅ Complete User Journey**
+
+- Execute end-to-end testing script
+- Test complete user flow: Search → Recommend → Display
+
+**✅ Performance Testing**
+
+- Load testing backend API dengan multiple concurrent requests
+- Monitor memory usage semua Docker containers
+- Benchmark response times dan throughput
+
+#### **7. Data Quality Validation**
+
+**✅ Dataset Validation**
+**Data Quality Report:**
+
+- Total records: 183,000 buku
+- Column validation dan data types
+- Missing values analysis
+- Duplicate records detection
+- Rating range verification (0-5 scale)
+- Author uniqueness count
+- Publication year range validation
+
+**✅ Model Performance Validation**
+**Recommendation Model Metrics:**
+
+- LSH Similarity Accuracy: ~85%
+- ALS RMSE: ~0.8
+- Hybrid Model Precision@10: High precision for top recommendations
+- Cross-validation results dan model comparison
+
+### **📈 Expected Test Results**
+
+| Test Category      | Success Criteria        | Expected Result              |
+| ------------------ | ----------------------- | ---------------------------- |
+| **Infrastructure** | All containers running  | 6/6 services UP              |
+| **Data Pipeline**  | Streaming data flow     | 183K records processed       |
+| **ML Models**      | Model files created     | ALS + LSH models saved       |
+| **Backend API**    | All endpoints respond   | Response time < 2s           |
+| **Frontend**       | UI loads and functional | All components render        |
+| **End-to-End**     | Complete user journey   | Search → Recommend → Display |
+
+### **📸 Screenshot Dokumentasi**
+
+#### **1. Kafka Producer Running**
+
+![Producer Status](./img/producer.jpg)
+_Kafka producer berhasil streaming 183K records dengan progress tracking_
+
+#### **2. Streamlit Dashboard**
+
+![Streamlit Dashboard](./img/streamlit.jpg)
+_Real-time monitoring dashboard dengan interactive filtering dan analytics_
+
+#### **3. MinIO Storage Management**
+
+![MinIO Console](./img/minio.jpg)
+_Auto-save batch data ke MinIO storage dengan S3-compatible interface_
+
+#### **4. Batch Data Storage**
+
+![Batch Data](./img/batchdata.jpg)
+_Batch files tersimpan otomatis setiap 5K records untuk backup dan analysis_
+
+#### **5. Spark ML Modeling**
+
+![ML Modeling](./img/modelling.png)
+_Machine learning pipeline di Spark dengan notebook interface untuk experiment_
+
+#### **6. Flask API Deployment**
+
+- Deploy dan test API menggunakan `./demo-steps/3-backend.sh`
+- Test health check endpoint: `curl http://localhost:5001/health`
+
+#### **7. React Frontend Application**
+
+- Start React frontend: `./demo-steps/4-frontend.sh`
+- Akses aplikasi web di: http://localhost:3000
+
+_Landing Page_
+<img src="./img/landingpage.png">
+_Search Books Page_
+<img src="./img/searchpage.png">
+_Popular Books Page_
+<img src="./img/popularbooks.png">
+_Recommendation Page_
+<img src="./img/recommendationpage.png">
+_Book Detail_
+<img src="./img/bookdetail.png">
+_Collaborative ALS_
+<img src="./img/collaborative.png">
+_Content-based LSH_
+<img src="./img/contentbased.png">
+_Hybrid (Collaborative + Content-based)_
+<img src="./img/hybrid.png">
 
 ---
+
+## 🎉 Kesimpulan
+
+Sistem Rekomendasi Buku Goodreads ini merupakan implementasi lengkap dari arsitektur data lakehouse modern yang menggabungkan:
+
+- **📊 Big Data Processing**: Apache Spark untuk processing 183K+ data buku
+- **🌊 Real-time Streaming**: Apache Kafka untuk data ingestion
+- **🤖 Machine Learning**: Hybrid recommendation (Content-based LSH + Collaborative ALS)
+- **💻 Frontend**: React + TypeScript dengan UI/UX yang intuitif
+- **🚀 Cloud**: Containerized dengan Docker untuk scalability
+- **📈 Monitoring**: Comprehensive analytics dan monitoring
+
+**Key Features:**
+
+- ✅ Real-time book recommendations
+- ✅ Hybrid ML algorithms (Content + Collaborative)
+- ✅ Modern responsive web interface
+- ✅ Scalable microservices architecture
+- ✅ Production-ready deployment
+- ✅ Comprehensive monitoring
+
+**Tech Stack:**
+
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Backend**: Flask, Python, Pandas, Scikit-learn
+- **Big Data**: Apache Spark, Kafka, MinIO
+- **ML**: ALS Matrix Factorization, LSH Similarity
+- **Infrastructure**: Docker, Nginx
+- **Monitoring**: Streamlit
