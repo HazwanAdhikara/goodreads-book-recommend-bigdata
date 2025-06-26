@@ -1,8 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Star, Calendar, User, BookOpen } from "lucide-react";
-import { Book } from "../types";
-import { formatRating, getRatingBadgeColor, truncateText } from "../utils";
+import { Book } from "../types/api";
+import {
+  formatRating,
+  getRatingBadgeColor,
+  truncateText,
+} from "../utils/index";
 
 interface BookCardProps {
   book: Book;
@@ -17,16 +21,56 @@ const BookCard: React.FC<BookCardProps> = ({
   recommendationType,
   similarity,
 }) => {
-  const rating =
-    typeof book.rating === "string"
-      ? parseFloat(book.rating.replace(",", "."))
-      : book.rating;
+  const rating = book.rating || 0;
+
+  // Generate consistent color based on book ID for variety
+  const getBookCoverStyle = (bookId: string, title: string) => {
+    const colors = [
+      "from-blue-500 to-blue-700",
+      "from-green-500 to-green-700",
+      "from-purple-500 to-purple-700",
+      "from-red-500 to-red-700",
+      "from-indigo-500 to-indigo-700",
+      "from-pink-500 to-pink-700",
+      "from-yellow-500 to-yellow-600",
+      "from-teal-500 to-teal-700",
+      "from-orange-500 to-orange-700",
+      "from-cyan-500 to-cyan-700",
+    ];
+
+    const patterns = [
+      "", // solid gradient
+      "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))]",
+      "bg-[conic-gradient(from_0deg,_var(--tw-gradient-stops))]",
+    ];
+
+    // Use book ID to consistently pick the same color/pattern
+    const colorIndex = parseInt(bookId.slice(-1)) % colors.length;
+    const patternIndex = parseInt(bookId.slice(-2)) % patterns.length;
+
+    return {
+      gradient: colors[colorIndex],
+      pattern: patterns[patternIndex],
+    };
+  };
+
+  const coverStyle = getBookCoverStyle(book.book_id, book.name);
 
   return (
     <div className="card group">
-      {/* Book Cover Placeholder */}
-      <div className="aspect-[3/4] bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center relative">
-        <BookOpen className="h-12 w-12 text-white opacity-80" />
+      {/* Book Cover with Title */}
+      <div
+        className={`aspect-[3/4] bg-gradient-to-br ${coverStyle.gradient} ${coverStyle.pattern} flex flex-col items-center justify-center relative p-4 text-center`}
+      >
+        {/* Book Title on Cover */}
+        <div className="text-white font-bold text-sm leading-tight mb-2 line-clamp-4 shadow-text">
+          {book.name.length > 50
+            ? book.name.substring(0, 50) + "..."
+            : book.name}
+        </div>
+
+        {/* Decorative Book Icon */}
+        <BookOpen className="h-8 w-8 text-white opacity-60 mt-auto" />
 
         {/* Recommendation Badge */}
         {recommendationType && (
@@ -50,7 +94,7 @@ const BookCard: React.FC<BookCardProps> = ({
       {/* Book Info */}
       <div className="p-4 flex-1 flex flex-col">
         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
-          <Link to={`/book/${book.id}`}>{book.name}</Link>
+          <Link to={`/book/${book.book_id}`}>{book.name}</Link>
         </h3>
 
         <div className="flex items-center text-sm text-gray-600 mb-2">

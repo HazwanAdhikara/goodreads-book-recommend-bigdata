@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, TrendingUp, Users, Star } from "lucide-react";
-import { api } from "../services/api";
-import { Book, HealthResponse } from "../types";
-import { formatRating, getRatingBadgeColor, truncateText } from "../utils";
-import BookCard from "./BookCard";
-import LoadingSpinner from "./LoadingSpinner";
+import { BookOpen, TrendingUp, Star } from "lucide-react";
+import api from "../services/goodreads-api";
+import { Book, HealthResponse } from "../types/api";
+import BookCard from "../components/BookCard";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const HomePage: React.FC = () => {
   const [popularBooks, setPopularBooks] = useState<Book[]>([]);
@@ -20,7 +19,7 @@ const HomePage: React.FC = () => {
 
         // Fetch health data and popular books in parallel
         const [healthResponse, popularResponse] = await Promise.all([
-          api.health(),
+          api.healthCheck(),
           api.getPopularBooks(12),
         ]);
 

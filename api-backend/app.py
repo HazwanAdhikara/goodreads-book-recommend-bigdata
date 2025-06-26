@@ -282,17 +282,27 @@ def get_book(book_id):
 @app.route('/books/<book_id>/recommendations', methods=['GET'])
 def get_recommendations(book_id):
     """Get recommendations endpoint - uses your LSH and ALS models"""
-    method = request.args.get('method', 'content')
-    limit = int(request.args.get('limit', 10))
+    method = request.args.get('method', 'content')  # Changed default to 'content'
+    limit = min(int(request.args.get('limit', 6)), 12)  # Reduced default and max limit
     
-    recommendations = api.get_recommendations(book_id, method, limit)
-    
-    return jsonify({
-        'book_id': book_id,
-        'method': method,
-        'recommendations': recommendations,
-        'total': len(recommendations)
-    })
+    try:
+        recommendations = api.get_recommendations(book_id, method, limit)
+        return jsonify({
+            'book_id': book_id,
+            'method': method,
+            'recommendations': recommendations,
+            'total': len(recommendations)
+        })
+    except Exception as e:
+        logger.error(f"Recommendations API error: {e}")
+        # Return empty recommendations instead of error to prevent UI breaking
+        return jsonify({
+            'book_id': book_id,
+            'method': method, 
+            'recommendations': [],
+            'total': 0,
+            'message': 'Recommendations temporarily unavailable'
+        }), 200  # Return 200 instead of 500
 
 @app.route('/books/author/<author>/recommendations', methods=['GET'])
 def get_author_recommendations(author):

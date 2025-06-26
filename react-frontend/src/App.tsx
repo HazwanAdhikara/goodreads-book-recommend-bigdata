@@ -1,10 +1,11 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { BookOpen, Search, Star } from "lucide-react";
-import HomePage from "./components/HomePage";
-import SearchPage from "./components/SearchPage";
-import BookDetailsPage from "./components/BookDetailsPage";
-import RecommendationsPage from "./components/RecommendationsPage";
+import { BookOpen, Search, Star, TrendingUp } from "lucide-react";
+import HomePage from "./pages/HomePage";
+import SearchPage from "./pages/SearchPage";
+import BookDetailsPage from "./pages/BookDetailsPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import PopularBooksPage from "./pages/PopularBooksPage";
 import { Link, useLocation } from "react-router-dom";
 
 const App: React.FC = () => {
@@ -13,6 +14,7 @@ const App: React.FC = () => {
   const menuItems = [
     { path: "/", label: "Home", icon: BookOpen },
     { path: "/search", label: "Search Books", icon: Search },
+    { path: "/popular", label: "Popular Books", icon: TrendingUp },
     { path: "/recommendations", label: "Recommendations", icon: Star },
   ];
 
@@ -80,7 +82,8 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
-          <Route path="/book/:id" element={<BookDetailsPage />} />
+          <Route path="/popular" element={<PopularBooksPage />} />
+          <Route path="/book/:bookId" element={<BookDetailsPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
         </Routes>
       </main>

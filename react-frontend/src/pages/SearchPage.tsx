@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Search, Filter, X } from "lucide-react";
-import { api } from "../services/api";
-import { Book } from "../types";
-import BookCard from "./BookCard";
-import LoadingSpinner from "./LoadingSpinner";
+import { Search, X } from "lucide-react";
+import api from "../services/goodreads-api";
+import { Book } from "../types/api";
+import BookCard from "../components/BookCard";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const SearchPage: React.FC = () => {
   const [query, setQuery] = useState("");

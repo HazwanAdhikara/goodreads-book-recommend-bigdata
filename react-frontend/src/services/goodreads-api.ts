@@ -2,12 +2,11 @@ import axios from "axios";
 import {
   Book,
   SearchResponse,
-  RecommendationResponse,
   PopularBooksResponse,
-  FilterRequest,
-  FilteredRecommendationResponse,
+  RecommendationResponse,
+  AuthorRecommendationResponse,
   HealthResponse,
-} from "../types";
+} from "../types/api";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
 
@@ -28,10 +27,10 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const api = {
+const api = {
   // Health check
-  health: async (): Promise<HealthResponse> => {
-    const response = await apiClient.get<HealthResponse>("/health");
+  healthCheck: async (): Promise<HealthResponse> => {
+    const response = await apiClient.get("/health");
     return response.data;
   },
 
@@ -40,15 +39,25 @@ export const api = {
     query: string,
     limit: number = 20
   ): Promise<SearchResponse> => {
-    const response = await apiClient.get<SearchResponse>("/books/search", {
+    const response = await apiClient.get("/books/search", {
       params: { q: query, limit },
     });
     return response.data;
   },
 
+  // Get popular books
+  getPopularBooks: async (
+    limit: number = 20
+  ): Promise<PopularBooksResponse> => {
+    const response = await apiClient.get("/books/popular", {
+      params: { limit },
+    });
+    return response.data;
+  },
+
   // Get book details
-  getBook: async (bookId: string): Promise<Book> => {
-    const response = await apiClient.get<Book>(`/books/${bookId}`);
+  getBookDetails: async (bookId: string): Promise<Book> => {
+    const response = await apiClient.get(`/books/${bookId}`);
     return response.data;
   },
 
@@ -58,35 +67,22 @@ export const api = {
     method: "content" | "collaborative" | "hybrid" = "content",
     limit: number = 10
   ): Promise<RecommendationResponse> => {
-    const response = await apiClient.get<RecommendationResponse>(
-      `/books/${bookId}/recommendations`,
-      {
-        params: { method, limit },
-      }
-    );
+    const response = await apiClient.get(`/books/${bookId}/recommendations`, {
+      params: { method, limit },
+    });
     return response.data;
   },
 
-  // Get popular books
-  getPopularBooks: async (
-    limit: number = 20
-  ): Promise<PopularBooksResponse> => {
-    const response = await apiClient.get<PopularBooksResponse>(
-      "/books/popular",
+  // Get author recommendations
+  getAuthorRecommendations: async (
+    author: string,
+    limit: number = 10
+  ): Promise<AuthorRecommendationResponse> => {
+    const response = await apiClient.get(
+      `/books/author/${encodeURIComponent(author)}/recommendations`,
       {
         params: { limit },
       }
-    );
-    return response.data;
-  },
-
-  // Get filtered recommendations
-  getFilteredRecommendations: async (
-    filters: FilterRequest
-  ): Promise<FilteredRecommendationResponse> => {
-    const response = await apiClient.post<FilteredRecommendationResponse>(
-      "/recommendations/filter",
-      filters
     );
     return response.data;
   },
