@@ -76,33 +76,9 @@ Dalam era digital saat ini, platform buku online seperti Goodreads menghadapi ta
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Data Flow & Architecture Overview
 
 ![Diagram](https://github.com/user-attachments/assets/9cd9cad0-8ece-40cd-b1d9-6fa1a6775a84)
-
-### **Data Flow Architecture**
-
-```mermaid
-graph TB
-    A[Dataset Goodreads] --> B[Kafka Producer]
-    B --> C[Apache Kafka]
-    C --> D[Streamlit Dashboard]
-    C --> E[MinIO Storage]
-    E --> F[Apache Spark]
-    F --> G[ML Models]
-    G --> H[Flask API]
-    H --> I[React Frontend]
-
-    subgraph "Machine Learning"
-        G1[Content-based LSH]
-        G2[Collaborative ALS]
-        G3[Hybrid Filtering]
-    end
-
-    G --> G1
-    G --> G2
-    G --> G3
-```
 
 ---
 
