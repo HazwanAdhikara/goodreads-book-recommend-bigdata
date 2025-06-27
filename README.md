@@ -78,7 +78,7 @@ Dalam era digital saat ini, platform buku online seperti Goodreads menghadapi ta
 
 ## 🏗️ Architecture Overview
 
-![image](./img/flow.png)
+![Diagram](https://github.com/user-attachments/assets/9cd9cad0-8ece-40cd-b1d9-6fa1a6775a84)
 
 ### **Data Flow Architecture**
 
